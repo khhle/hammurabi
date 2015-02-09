@@ -255,15 +255,42 @@ void getInput(Player* myPlayer)
 	int nfood;
 	int nseed;
 
+	char doubleCheck;
 
-	cout << "How many acres do you wish to buy (Negative to sell)? ";
-	cin >> nland;
+	do{
+		int foodRemaining = myPlayer->getFood();
 
-	cout << "How many bushels do you wish to feed your people? ";
-	cin >> nfood;
+		do{
+			cout << "How many acres do you wish to buy (Negative to sell)? ";
+			cin >> nland;
+			if (myPlayer->getFood() < (nland * myPlayer->getPriceOfLand()))
+				cout << "You can't buy " << nland << " acres, you only have " << myPlayer->getFood() << " bushels!" << endl;
+		} while (myPlayer->getFood() < (nland * myPlayer->getPriceOfLand()));
 
-	cout << "How many acres do you wish to plant with seed? ";
-	cin >> nseed;
+		foodRemaining -= nland * myPlayer->getPriceOfLand();
+
+		do{
+			cout << "How many bushels do you wish to feed your people? ";
+			cin >> nfood;
+			if (nfood > foodRemaining)
+				cout << "You can't use " << nfood << " bushels, you only have " << foodRemaining << " left!" << endl;
+		} while (nfood > foodRemaining);
+
+		foodRemaining -= nfood;
+
+		do{
+			cout << "How many acres do you wish to plant with seed? ";
+			cin >> nseed;
+			if (nseed > foodRemaining)
+				cout << "You can't plant " << nfood << " seeds, you only have " << foodRemaining << " left!" << endl;
+		} while (nseed > foodRemaining);
+
+		foodRemaining -= nseed;
+
+		cout << "You wish to buy " << nland << " acres, feed your people " << nfood << " bushels, and plant " << nseed << " seeds." << endl;
+		cout << "This will leave you with " << foodRemaining << " bushels, is that correct? Enter N to retry. ";
+		cin >> doubleCheck;
+	} while (doubleCheck == 'N' || doubleCheck == 'n');
 
 	//still need to validate input before pass it to updatePlayer
 	myPlayer->updatePlayer(nland, nfood, nseed);
