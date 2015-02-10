@@ -28,6 +28,12 @@ private:
 	int food;
 	int priceOfLand;
 
+	int starvingNumber;
+	int immigrantNumber;
+	int plagueNumber;
+	int harvestNumber;
+	int ratNumber;
+
 public:
 	Player();
 	Player(int nyearNumber, int npopulation, int nland, int nfood, int npriceOfLand);
@@ -39,6 +45,12 @@ public:
 	int getFood(){ return food; }
 	int getPriceOfLand(){ return priceOfLand; }
 
+	int getStarvingNumber(){ return starvingNumber; }
+	int getImmigrantNumber(){ return immigrantNumber; }
+	int getPlagueNumber(){ return plagueNumber; }
+	int getHarvestNumber(){ return harvestNumber; }
+	int getRatNumber(){ return ratNumber; }
+
 	//Setter for variables
 	void setYearNumber(int n){ yearNumber = n; }
 	void setPopulation(int n){ population = n; }
@@ -48,12 +60,12 @@ public:
 
 
 	void printPlayer();	//print player's variables
-	void printReport(int starvingNumber, int immigrantNumber, int plagueNumber, int havestNumber, int ratNumber);
+	void printReport();
 	bool updatePlayer(int nLand, int nFood, int nSeed); //update every turns then call printReport
 	
 	int getPlagueDeath();				//calculate how many people die by plague
 	int getStarvingDeath(int nFood);	//calculate how many people die by starving
-	bool isUprising(int numStarving);	//return true if people want to uprising
+	bool isUprising();	//return true if people want to uprising
 	int getImmigrant();					//calculate how many new people enter
 	int getHarvest(int nSeed);			//calculate how much we harvest
 	int getEatenByRat();				//calculate how much rat has eaten
@@ -85,7 +97,7 @@ void Player::printPlayer()
 }
 
 //Print the report after each turn
-void Player::printReport(int starvingNumber,int immigrantNumber,int plagueNumber,int havestNumber,int ratNumber)
+void Player::printReport()
 {
 	cout << endl;
 	cout << "O great Hammurabi!" << endl;
@@ -95,7 +107,7 @@ void Player::printReport(int starvingNumber,int immigrantNumber,int plagueNumber
 	if (plagueNumber > 0)
 		cout << "The plague killed half the people." << endl;
 	cout << "The population is now "<< population << endl;
-	cout << "We harvested " << havestNumber << " bushels." << endl;
+	cout << "We harvested " << harvestNumber << " bushels." << endl;
 	cout << "Rats destroyed " << ratNumber << " bushels, leaving " << food << " bushels in storage." << endl;
 	cout << "The city owns " << land << " acres of land." << endl;
 	cout << "Land is currently worth "<<  priceOfLand << " bushels per acre." << endl;
@@ -130,10 +142,10 @@ int Player::getStarvingDeath(int nFood)
 
 //Return true if more than 45% of the people starve. 
 //(This will cause you to be immediately thrown out of office, ending the game.)
-bool Player::isUprising(int numStarving)
+bool Player::isUprising()
 {
 	
-	float percentStarving = (float)numStarving / population;
+	float percentStarving = (float)starvingNumber / population;
 	if (percentStarving > 0.45)
 		return true;
 	else
@@ -170,6 +182,7 @@ int Player::getEatenByRat()
 {
 	
 	int chance = (int)(rand() % 3);
+	cout << chance << endl;
 	if (chance == 0)
 	{
 		int chanceEatAmount = (int)(rand() % 3) + 1;
@@ -193,11 +206,11 @@ int Player::getNewPrice()
 //
 bool Player::updatePlayer(int nLand, int nFood, int nSeed)
 {
-	int starvingNumber = getStarvingDeath(nFood);
-	int immigrantNumber = getImmigrant();
-	int plagueNumber = getPlagueDeath();
-	int havestNumber = getHarvest(nSeed);
-	int ratNumber = getEatenByRat();
+	starvingNumber = getStarvingDeath(nFood);
+	immigrantNumber = getImmigrant();
+	plagueNumber = getPlagueDeath();
+	harvestNumber = getHarvest(nSeed);
+	ratNumber = getEatenByRat();
 
 	land += nLand;
 	if (nLand > 0)
@@ -208,28 +221,26 @@ bool Player::updatePlayer(int nLand, int nFood, int nSeed)
 	population -= plagueNumber;
 	population -= starvingNumber;
 
-	//if people are not happy, return false to end the game
-	//if (isUprising(starvingNumber))
-	//	return false;
-
 	if (starvingNumber <= 0)
 		population += immigrantNumber;
 
-	food += havestNumber;
+	food += harvestNumber;
 	food -= ratNumber;
 
 	priceOfLand = getNewPrice();
 	
-
 	yearNumber++;
 
-	printReport(starvingNumber, immigrantNumber, plagueNumber, havestNumber, ratNumber);
+	//printReport(starvingNumber, immigrantNumber, plagueNumber, havestNumber, ratNumber);
 
 	return true;
 }
 
 //Helper function to get input and validate 
 void getInput(Player* myPlayer);
+
+//Helper function that checks if the player has lost
+bool checkEndGame(Player* myPlayer);
 
 void main()
 {
@@ -241,7 +252,16 @@ void main()
 	{
 		getInput(myPlayer);
 		cout << endl;
-		myPlayer->printPlayer();
+		if (checkEndGame(myPlayer))
+		{
+			cout << setw(40) << "GAME OVER" << endl;
+			break;
+		}
+		else
+		{
+			myPlayer->printReport();
+			myPlayer->printPlayer();
+		}
 	}
 
 	system("pause");
@@ -292,8 +312,18 @@ void getInput(Player* myPlayer)
 		cin >> doubleCheck;
 	} while (doubleCheck == 'N' || doubleCheck == 'n');
 
-	//still need to validate input before pass it to updatePlayer
 	myPlayer->updatePlayer(nland, nfood, nseed);
 
 
+}
+
+bool checkEndGame(Player* myPlayer)
+{
+	if (myPlayer->isUprising())
+	{
+		cout << "Due to Extreme missmanagement, " << myPlayer->getStarvingNumber() << " have starved! The remaining population" << endl;
+		cout << "has overthrown you and you have been declared the worst King in history!" << endl;
+		return true;
+	}
+	return false;
 }
