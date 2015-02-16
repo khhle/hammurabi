@@ -189,7 +189,8 @@ int Player::getEatenByRat()
 	if (chance == 0)
 	{
 		int chanceEatAmount = (int)(rand() % 3) + 1;
-		return food*(chanceEatAmount / 100);
+		int foodEaten = food * ((float)chanceEatAmount / (float) 10);
+		return foodEaten;
 	}
 	else
 		return 0;
@@ -222,15 +223,14 @@ bool Player::updatePlayer(int nLand, int nFood, int nSeed)
 	immigrantNumber = getImmigrant();
 	plagueNumber = getPlagueDeath();
 	harvestNumber = getHarvest(nSeed);
-	ratNumber = getEatenByRat();
 
 	population -= plagueNumber;
 	population -= starvingNumber;
 
-	if (starvingNumber <= 0)
-		population += immigrantNumber;
+	population += immigrantNumber;
 
 	food += harvestNumber;
+	ratNumber = getEatenByRat();
 	food -= ratNumber;
 
 	priceOfLand = getNewPrice();
@@ -250,9 +250,12 @@ bool checkEndGame(Player* myPlayer);
 
 void main()
 {
+	//seed random for better randomness
+	srand(time(0));
+
 	Player* myPlayer = new Player(1, POPULATION_DEFAULT, LAND_DEFAULT, FOOD_DEFAULT, PRICE_DEFAULT);
 	myPlayer->printPlayer();
-	
+	bool winner = true;
 	//loop for 10 years
 	for (int i = 0; i < 10; i++)
 	{
@@ -260,6 +263,7 @@ void main()
 		cout << endl;
 		if (checkEndGame(myPlayer))
 		{
+			winner = false;
 			cout << setw(40) << "GAME OVER" << endl;
 			break;
 		}
@@ -270,8 +274,34 @@ void main()
 		}
 	}
 
+	if(winner)
+	{
+		cout<<"You have kept your people alive and 'well' for 10 years!"<< endl;
+		cout<<"You are truly great!"<<endl;
+		cout << setw(40) << "CONGRATULATIONS" << endl;
+	}
+
+		
+
+
 	system("pause");
 	return;
+}
+
+int validateIntegerInput()
+{
+	int input = 0;
+	while(true)
+	{
+		cin >> input;
+
+		if(!cin.fail())
+			return input;
+		else
+			cout<<"Please enter only whole number values!" << endl;
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(),'\n');
+	}
 }
 
 //Getting input from user and validating
@@ -280,15 +310,18 @@ void getInput(Player* myPlayer)
 	int nland;
 	int nfood;
 	int nseed;
-
+	bool invalid = false;
 	char doubleCheck;
+	string inputLine;
 
 	do{
 		int foodRemaining = myPlayer->getFood();
 
 		do{
 			cout << "How many acres do you wish to buy (Negative to sell)? ";
-			cin >> nland;
+			//input checking
+			nland = validateIntegerInput();
+
 			if (myPlayer->getFood() < (nland * myPlayer->getPriceOfLand()))
 				cout << "You can't buy " << nland << " acres, you only have " << myPlayer->getFood() << " bushels!" << endl;
 		} while (myPlayer->getFood() < (nland * myPlayer->getPriceOfLand()));
@@ -297,19 +330,40 @@ void getInput(Player* myPlayer)
 
 		do{
 			cout << "How many bushels do you wish to feed your people? ";
-			cin >> nfood;
-			if (nfood > foodRemaining)
+			nfood = validateIntegerInput();
+
+			if (nfood < 0)
+			{
+				cout<< "You can't feed people a negative amount of food!"<<endl;
+				invalid = true;
+			}
+			else if (nfood > foodRemaining)
+			{
 				cout << "You can't use " << nfood << " bushels, you only have " << foodRemaining << " left!" << endl;
-		} while (nfood > foodRemaining);
+				invalid = true;
+			}
+			else
+				invalid = false;
+		} while (invalid);
 
 		foodRemaining -= nfood;
 
 		do{
 			cout << "How many acres do you wish to plant with seed? ";
-			cin >> nseed;
-			if (nseed > foodRemaining)
+			nseed = validateIntegerInput();
+			if (nseed < 0)
+			{
+				cout<< "You can't plant a negative amount of seeds!"<<endl;
+				invalid = true;
+			}
+			else if (nseed > foodRemaining)
+			{
 				cout << "You can't plant " << nfood << " seeds, you only have " << foodRemaining << " left!" << endl;
-		} while (nseed > foodRemaining);
+				invalid = true;
+			}
+			else
+				invalid = false;
+		} while (invalid);
 
 		foodRemaining -= nseed;
 
