@@ -157,7 +157,10 @@ bool Player::isUprising()
 //(20 * number of acres you have + amount of grain you have in storage) / (100 * population) + 1.
 int Player::getImmigrant()
 {
-	
+	if(getStarvingNumber() > 0)
+	{
+		return 0;
+	}
 
 	return (20 * land + food) / (100 * population) + 1;
 }
@@ -206,17 +209,20 @@ int Player::getNewPrice()
 //
 bool Player::updatePlayer(int nLand, int nFood, int nSeed)
 {
-	starvingNumber = getStarvingDeath(nFood);
-	immigrantNumber = getImmigrant();
-	plagueNumber = getPlagueDeath();
-	harvestNumber = getHarvest(nSeed);
-	ratNumber = getEatenByRat();
-
+	//update the remaining stats first, then calculate all the random elements
+	food -= nFood;
+	food -= nSeed;
 	land += nLand;
 	if (nLand > 0)
 		food -= nLand * priceOfLand;
 	else
 		food += nLand * priceOfLand;
+
+	starvingNumber = getStarvingDeath(nFood);
+	immigrantNumber = getImmigrant();
+	plagueNumber = getPlagueDeath();
+	harvestNumber = getHarvest(nSeed);
+	ratNumber = getEatenByRat();
 
 	population -= plagueNumber;
 	population -= starvingNumber;
