@@ -185,7 +185,6 @@ int Player::getEatenByRat()
 {
 	
 	int chance = (int)(rand() % 3);
-	cout << chance << endl;
 	if (chance == 0)
 	{
 		int chanceEatAmount = (int)(rand() % 3) + 1;
@@ -214,10 +213,8 @@ bool Player::updatePlayer(int nLand, int nFood, int nSeed)
 	food -= nFood;
 	food -= nSeed;
 	land += nLand;
-	if (nLand > 0)
-		food -= nLand * priceOfLand;
-	else
-		food += nLand * priceOfLand;
+
+	food -= nLand * priceOfLand;
 
 	starvingNumber = getStarvingDeath(nFood);
 	immigrantNumber = getImmigrant();
@@ -237,7 +234,8 @@ bool Player::updatePlayer(int nLand, int nFood, int nSeed)
 	
 	yearNumber++;
 
-	//printReport(starvingNumber, immigrantNumber, plagueNumber, havestNumber, ratNumber);
+	if(population <0)
+		population = 0;
 
 	return true;
 }
@@ -257,7 +255,7 @@ void main()
 	myPlayer->printPlayer();
 	bool winner = true;
 	//loop for 10 years
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		getInput(myPlayer);
 		cout << endl;
@@ -379,11 +377,17 @@ void getInput(Player* myPlayer)
 
 bool checkEndGame(Player* myPlayer)
 {
-	if (myPlayer->isUprising())
+	if (myPlayer->isUprising() || myPlayer->getPopulation() == 0)
 	{
-		cout << "Due to Extreme missmanagement, " << myPlayer->getStarvingNumber() << " have starved! The remaining population" << endl;
-		cout << "has overthrown you and you have been declared the worst King in history!" << endl;
-		return true;
+		cout << "Due to EXTREME missmanagement, " << myPlayer->getStarvingNumber() << " have starved!";
+		if(myPlayer->getPopulation() == 0)
+		{
+			cout<<endl<<"What a terrible ruler; you have no people left to rule!"<<endl;
+		}
+		else{
+			cout << " The remaining population" <<endl<< "has overthrown you and you have been declared the worst King in history!" << endl;
+		}
+			return true;
 	}
 	return false;
 }

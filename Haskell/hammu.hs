@@ -1,5 +1,5 @@
 import System.Random  
-
+import Data.Char
 
 population_default	= 100
 land_default = 1000
@@ -122,22 +122,32 @@ updatePlayer oldPopulation oldLand oldFood oldPrice nLand nFood nSeed = do
 			let	priceOfLand2 = getNewPrice oldPrice
 			show ("Population: " ++	show currentPopulation4 ++ " Land: " ++ show currentLand2 ++ " Food: " ++ show currentFood5 ++ " Price: " ++ show priceOfLand2)
 		
-
+runGame:: Int -> (Int, Int, Int) -> IO ()
+runGame 11 _ = putStrLn "You Win!"
+runGame t (f, p, l) = do
+		putStrLn "How many acres do you wish to buy (Negative to sell)?"  
+		nLandString <- getLine
+		let nLand = read nLandString :: Int --convert string -> int
+		putStrLn "How many bushels do you wish to feed your people?"
+		nFoodString <- getLine
+		let nFood = read nFoodString :: Int --convert string -> int
+		putStrLn "How many acres do you wish to plant with seed?"
+		nSeedString <- getLine
+		let nSeed = read nSeedString :: Int --convert string -> int
+		runGame (t+1) (2800, 100, 1000)
 
 -- IO handle could only be handle in main...
 -- 
 main = do  
-	putStrLn "How many acres do you wish to buy (Negative to sell)?"  
-	nLandString <- getLine
-	putStrLn "How many bushels do you wish to feed your people?"
-	nFoodString <- getLine
-	putStrLn "How many acres do you wish to plant with seed?"
-	nSeedString <- getLine
-	let nLand = read nLandString :: Int --convert string -> int
-	let nFood = read nFoodString :: Int --convert string -> int
-	let nSeed = read nSeedString :: Int --convert string -> int
-	let abc = updatePlayer 100 1000 2800 20 nLand nFood nSeed
-	putStrLn $ "Report= " ++ abc 		-- putStrLn only accept String variable
+	putStrLn "-------------------------------------------"
+	putStrLn "Year: 1"
+	putStrLn "Acres of land: 1000"
+	putStrLn "Population: 100"
+	putStrLn "Stored grain: 2800"
+	putStrLn "Price of land: 20"
+	putStrLn ""
+	runGame 1 (2800, 100, 1000)
+	--putStrLn $ "Report= " ++ abc 		-- putStrLn only accept String variable
 
 
 
