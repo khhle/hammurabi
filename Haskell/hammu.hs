@@ -1,11 +1,6 @@
 import System.Random  
+import Control.Monad
 import Data.Char
-
-population_default	= 100
-land_default = 1000
-food_default = 2800
-price_default = 20
-
 
 -- Generate random number from 0 - range
 -- input: seed and range boundary
@@ -79,75 +74,51 @@ getNewPrice :: Int -> Int
 getNewPrice currentPrice = do
 	let chance = generateRandom 100 6
 	chance + 17
-
-	
--- should be update every turn
--- input: 4 old variables from previous year, 3 input variables from user
--- ouput (testing): string show some important variables' value 
--- output: should be a list or something so that Main() could use it in a loops. 
--- 			or anything... 
-updatePlayer :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> String
-updatePlayer oldPopulation oldLand oldFood oldPrice nLand nFood nSeed = do
-	let currentFood2 = oldFood - nFood - nSeed
-	let	currentLand2 = oldLand + nLand
-	-- I have to re-create new variable multiple times (like currentFood2, currrentFood3...)
-	-- because i don't think haskell let us overwrite variable, maybe... 
-	if(nLand > 0)
-		then do 
-			let currentFood3 = currentFood2 - nLand * oldPrice -- this line make the whole code look ugly
-			let starvingNumber = getStarvingDeath oldPopulation nFood
-			let	immigrantNumber = getImmigrant oldLand currentFood3 oldPopulation starvingNumber
-			let	plagueNumber = getPlagueDeath oldPopulation
-			let	harvestNumber = getHarvest nSeed
-			let	currentPopulation2 = oldPopulation - plagueNumber
-			let	currentPopulation3 = currentPopulation2 - starvingNumber
-			let	currentPopulation4 = currentPopulation3 + immigrantNumber
-			let	currentFood4 = currentFood3 + harvestNumber
-			let	ratNumber = getEatenByRat currentFood4
-			let	currentFood5 = currentFood4 - ratNumber
-			let	priceOfLand2 = getNewPrice oldPrice
-			show ("Population: " ++	show currentPopulation4 ++ " Land: " ++ show currentLand2 ++ " Food: " ++ show currentFood5 ++ " Price: " ++ show priceOfLand2)
-		else do
-			let currentFood3 = currentFood2 + nLand * oldPrice -- this line make the whole code look ugly
-			let starvingNumber = getStarvingDeath oldPopulation nFood
-			let	immigrantNumber = getImmigrant oldLand currentFood3 oldPopulation starvingNumber
-			let	plagueNumber = getPlagueDeath oldPopulation
-			let	harvestNumber = getHarvest nSeed
-			let	currentPopulation2 = oldPopulation - plagueNumber
-			let	currentPopulation3 = currentPopulation2 - starvingNumber
-			let	currentPopulation4 = currentPopulation3 + immigrantNumber
-			let	currentFood4 = currentFood3 + harvestNumber
-			let	ratNumber = getEatenByRat currentFood4
-			let	currentFood5 = currentFood4 - ratNumber
-			let	priceOfLand2 = getNewPrice oldPrice
-			show ("Population: " ++	show currentPopulation4 ++ " Land: " ++ show currentLand2 ++ " Food: " ++ show currentFood5 ++ " Price: " ++ show priceOfLand2)
 		
 runGame:: Int -> (Int, Int, Int) -> IO ()
 runGame 11 _ = putStrLn "You Win!"
 runGame t (f, p, l) = do
-		putStrLn "How many acres do you wish to buy (Negative to sell)?"  
-		nLandString <- getLine
-		let nLand = read nLandString :: Int --convert string -> int
-		putStrLn "How many bushels do you wish to feed your people?"
-		nFoodString <- getLine
-		let nFood = read nFoodString :: Int --convert string -> int
-		putStrLn "How many acres do you wish to plant with seed?"
-		nSeedString <- getLine
-		let nSeed = read nSeedString :: Int --convert string -> int
-		runGame (t+1) (2800, 100, 1000)
+	let	priceOfLand = getNewPrice 1
+	putStrLn "-------------------------------------------"
+	putStrLn ("Year: " ++ show t)
+	putStrLn ("Acres of land: " ++ show l)
+	putStrLn ("Population: " ++ show p)
+	putStrLn ("Stored grain: " ++ show f)
+	putStrLn ("Price of land: " ++ show priceOfLand)
+	putStrLn ""
+	putStrLn "How many acres do you wish to buy (Negative to sell)?"  
+	nLandString <- getLine
+	let nLand = read nLandString :: Int --convert string -> int
+	putStrLn "How many bushels do you wish to feed your people?"
+	nFoodString <- getLine
+	let nFood = read nFoodString :: Int --convert string -> int
+	putStrLn "How many acres do you wish to plant with seed?"
+	nSeedString <- getLine
+	let nSeed = read nSeedString :: Int --convert string -> int
+	let currentFood = f - nLand * priceOfLand 
+	let newLand = l + nLand
+	let starvingNumber = getStarvingDeath p nFood
+	let	immigrantNumber = getImmigrant l currentFood p starvingNumber
+	let	plagueNumber = getPlagueDeath p
+	let	harvestNumber = getHarvest nSeed
+	let	newPopulation = p - plagueNumber - starvingNumber + immigrantNumber
+	let	tempFood = currentFood + harvestNumber - nSeed
+	let	ratNumber = getEatenByRat tempFood
+	let	newFood = tempFood - ratNumber
+	putStrLn ""
+	putStrLn "O great Hammurabi!"
+	putStrLn ("You are in year " ++ show (t + 1) ++ " of your ten year rule.")
+	putStrLn ("In the previous year " ++ show starvingNumber ++ " people starved to death.")
+	putStrLn ("In the previous year " ++ show immigrantNumber ++ " people entered the kingdom.")
+	when (plagueNumber > 0) $ putStrLn "The plague killed half the people."
+	putStrLn ("The population is now " ++ show newPopulation)
+	putStrLn ("We harvested " ++ show harvestNumber ++ " bushels.")
+	putStrLn ("Rats destroyed " ++ show ratNumber ++ " bushels, leaving " ++ show newFood ++ " bushels in storage.")
+	putStrLn ("The city owns " ++ show newLand ++ " acres of land.")
+	if ( newPopulation == 0) then putStrLn "You Lose!!!"
+		else runGame (t+1) (newFood, newPopulation, newLand)
 
 -- IO handle could only be handle in main...
 -- 
 main = do  
-	putStrLn "-------------------------------------------"
-	putStrLn "Year: 1"
-	putStrLn "Acres of land: 1000"
-	putStrLn "Population: 100"
-	putStrLn "Stored grain: 2800"
-	putStrLn "Price of land: 20"
-	putStrLn ""
 	runGame 1 (2800, 100, 1000)
-	--putStrLn $ "Report= " ++ abc 		-- putStrLn only accept String variable
-
-
-
