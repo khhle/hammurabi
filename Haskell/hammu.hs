@@ -1,13 +1,16 @@
 import System.Random  
 import Control.Monad
 import Data.Char
+--importing clock for random seeding, and unfortunately Unsafe to help with that
+import System.IO.Unsafe
+import Data.Time.Clock.POSIX
 
 -- Generate random number from 0 - range
 -- input: seed and range boundary
 -- imperfection, will produce the same number if passing the same seed
 -- http://stackoverflow.com/questions/7980009/random-number-generator-in-haskell
-generateRandom :: Int -> Int -> Int
-generateRandom seed range =  head (randomRs (0, range) . mkStdGen $ seed)
+generateRandom :: Int -> Int
+generateRandom range =  head (randomRs (0, range) . mkStdGen $ (round (unsafePerformIO getPOSIXTime) :: Int))
 
 
 --Each year, there is a 15% chance of a horrible plague. 
@@ -15,7 +18,7 @@ generateRandom seed range =  head (randomRs (0, range) . mkStdGen $ seed)
 --Return the number of plague deaths	
 getPlagueDeath :: Int -> Int
 getPlagueDeath currentPopulation = do
-	let chance = generateRandom 100 6
+	let chance = generateRandom 6
 	if(chance == 0)
 		then quot currentPopulation 2
 		else 0
@@ -51,7 +54,7 @@ getImmigrant currrentLand currentFood currentPopulation starvingNumber = do
 --Return the number of bushels harvested.
 getHarvest :: Int -> Int -> Int
 getHarvest nSeed land = do
-	let chance = (generateRandom 100 6) + 1
+	let chance = (generateRandom 6) + 1
 	((nSeed * chance) * land) `div` 1000
 	
 --There is a 40% chance that you will have a rat infestation. 
@@ -59,10 +62,10 @@ getHarvest nSeed land = do
 --Return the amount of grain eaten by rats (possibly zero).
 getEatenByRat :: Int -> Int
 getEatenByRat currentFood = do
-	let chance = generateRandom 100 3
+	let chance = generateRandom 3
 	if(chance == 0)
 		then do
-			let chanceEaten = (generateRandom 100 3) + 1
+			let chanceEaten = (generateRandom 3) + 1
 			let a = quot chanceEaten 10
 			currentFood * a
 		else 0
@@ -71,7 +74,7 @@ getEatenByRat currentFood = do
 --Return the new price for the next set of decisions the player has to make.
 getNewPrice :: Int -> Int
 getNewPrice currentPrice = do
-	let chance = generateRandom 100 6
+	let chance = generateRandom 6
 	chance + 17
 		
 runGame:: Int -> (Int, Int, Int) -> IO ()
