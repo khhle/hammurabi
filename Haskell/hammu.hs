@@ -31,7 +31,6 @@ getStarvingDeath currentPopulation nFood = do
 		then 0
 	else currentPopulation - numberFeedPeople
 
-
 	
 --Nobody will come to the city if people are starving. 
 --If everyone is well fed, compute how many people come to the city as: 
@@ -50,10 +49,10 @@ getImmigrant currrentLand currentFood currentPopulation starvingNumber = do
 --Each acre that was planted with seed will yield this many bushels of grain. 
 --(Example: if you planted 50 acres, and your number is 3, you harvest 150 bushels of grain). 
 --Return the number of bushels harvested.
-getHarvest :: Int -> Int
-getHarvest nSeed = do
+getHarvest :: Int -> Int -> Int
+getHarvest nSeed land = do
 	let chance = (generateRandom 100 6) + 1
-	nSeed * chance
+	((nSeed * chance) * land) `div` 1000
 	
 --There is a 40% chance that you will have a rat infestation. 
 --When this happens, rats will eat somewhere between 10% and 30% of your grain. 
@@ -100,7 +99,7 @@ runGame t (f, p, l) = do
 	let starvingNumber = getStarvingDeath p nFood
 	let	immigrantNumber = getImmigrant l currentFood p starvingNumber
 	let	plagueNumber = getPlagueDeath p
-	let	harvestNumber = getHarvest nSeed
+	let	harvestNumber = getHarvest nSeed newLand
 	let	newPopulation = p - plagueNumber - starvingNumber + immigrantNumber
 	let	tempFood = currentFood + harvestNumber - nSeed
 	let	ratNumber = getEatenByRat tempFood
@@ -115,10 +114,13 @@ runGame t (f, p, l) = do
 	putStrLn ("We harvested " ++ show harvestNumber ++ " bushels.")
 	putStrLn ("Rats destroyed " ++ show ratNumber ++ " bushels, leaving " ++ show newFood ++ " bushels in storage.")
 	putStrLn ("The city owns " ++ show newLand ++ " acres of land.")
-	if ( newPopulation == 0) then putStrLn "You Lose!!!"
-		else runGame (t+1) (newFood, newPopulation, newLand)
+	let uprisingCount = starvingNumber `div` p
+	if ( newPopulation == 0) then putStrLn "What a terrible ruler; you have no people left to rule!"
+		else if ( starvingNumber > (45 `div` 100)) then putStrLn "The remaining population has overthrown you and you have been declared the worst King in history!"
+			else runGame (t+1) (newFood, newPopulation, newLand)
 
 -- IO handle could only be handle in main...
 -- 
 main = do  
 	runGame 1 (2800, 100, 1000)
+	putStrLn "GAME OVER"

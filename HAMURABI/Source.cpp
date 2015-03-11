@@ -171,10 +171,12 @@ int Player::getImmigrant()
 //Return the number of bushels harvested.
 int Player::getHarvest(int nSeed)
 {
+	float landChance = land / 1000.0;
+	float chance = (int)(rand() % (6)) + 1;
+	chance = chance * landChance;
 	
-	int chance = (int)(rand() % 6) + 1;
 
-	return nSeed * chance;
+	return (int) (nSeed * chance);
 }
 
 
@@ -255,7 +257,7 @@ void main()
 	myPlayer->printPlayer();
 	bool winner = true;
 	//loop for 10 years
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		getInput(myPlayer);
 		cout << endl;
